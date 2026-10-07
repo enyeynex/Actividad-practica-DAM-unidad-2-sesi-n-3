@@ -10,6 +10,7 @@ import pe.edu.upeu.pharmamobil.data.repository.FakeProductoRepository
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 import pe.edu.upeu.pharmamobil.domain.usecase.ListarProductosUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCase
+import pe.edu.upeu.pharmamobil.platform.formatearSoles
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -63,7 +64,8 @@ class ProductoViewModelTest {
             nuevoViewModel(repositorio).uiState.value.fase
         )
 
-        assertEquals("S/ 12.50", fase.productos.first().precio)
+        // El texto exacto depende de la plataforma: lo decide formatearSoles.
+        assertEquals(formatearSoles(12.5), fase.productos.first().precio)
         assertEquals("5 u.", fase.productos.first().stock)
         assertTrue(fase.productos.first().requiereReposicion)
     }

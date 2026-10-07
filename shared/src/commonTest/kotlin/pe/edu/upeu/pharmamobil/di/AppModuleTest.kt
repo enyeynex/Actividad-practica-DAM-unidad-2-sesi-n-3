@@ -9,7 +9,10 @@ import org.koin.core.Koin
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import pe.edu.upeu.pharmamobil.data.repository.ClienteRepositorioEnMemoria
+import org.koin.dsl.module
 import pe.edu.upeu.pharmamobil.data.repository.ProductoRepositorioEnMemoria
+import pe.edu.upeu.pharmamobil.domain.platform.Compartidor
+import pe.edu.upeu.pharmamobil.domain.platform.FakeCompartidor
 import pe.edu.upeu.pharmamobil.domain.repository.ClienteRepository
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
 import pe.edu.upeu.pharmamobil.domain.usecase.ListarClientesUseCase
@@ -17,6 +20,7 @@ import pe.edu.upeu.pharmamobil.domain.usecase.ListarProductosUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarClienteUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCase
 import pe.edu.upeu.pharmamobil.presentation.cliente.ClienteViewModel
+import pe.edu.upeu.pharmamobil.presentation.detalle.DetalleProductoViewModel
 import pe.edu.upeu.pharmamobil.presentation.producto.ProductoViewModel
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -93,5 +97,25 @@ class AppModuleTest {
 
         koin.get<ProductoViewModel>()
         koin.get<ClienteViewModel>()
+    }
+
+    /**
+     * El platformModule real necesita un Context de Android o UIKit, que en
+     * una prueba no existen. Como el Compartidor es una interfaz inyectada,
+     * basta registrar un doble en su lugar.
+     */
+    @Test
+    fun resuelveElDetalleConUnCompartidorDeReemplazo() {
+
+        val koin = startKoin {
+            modules(
+                dataModule,
+                domainModule,
+                presentationModule,
+                module { single<Compartidor> { FakeCompartidor() } }
+            )
+        }.koin
+
+        koin.get<DetalleProductoViewModel>()
     }
 }
