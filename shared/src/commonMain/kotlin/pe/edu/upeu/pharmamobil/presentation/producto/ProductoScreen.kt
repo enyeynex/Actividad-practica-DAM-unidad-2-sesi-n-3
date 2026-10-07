@@ -37,7 +37,8 @@ import pe.edu.upeu.pharmamobil.presentation.components.ValidatedTextField
 @Composable
 fun ProductoScreen(
     viewModel: ProductoViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onVerDetalle: (Long) -> Unit = {}
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -104,7 +105,10 @@ fun ProductoScreen(
                             items = fase.productos,
                             key = { it.id }
                         ) { producto ->
-                            ProductoItem(producto)
+                            ProductoItem(
+                                producto = producto,
+                                onClick = { onVerDetalle(producto.id) }
+                            )
                         }
                     }
 
@@ -230,10 +234,12 @@ private fun EncabezadoInventario(
 
 @Composable
 private fun ProductoItem(
-    producto: ProductoUi
+    producto: ProductoUi,
+    onClick: () -> Unit
 ) {
 
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth()
     ) {
 

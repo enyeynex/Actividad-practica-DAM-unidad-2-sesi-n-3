@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocalPharmacy
@@ -53,6 +54,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import pe.edu.upeu.pharmamobil.navigation.Screen
 import pe.edu.upeu.pharmamobil.presentation.cliente.ClienteScreen
 import pe.edu.upeu.pharmamobil.presentation.components.EstadoVacio
+import pe.edu.upeu.pharmamobil.presentation.detalle.DetalleProductoScreen
 import pe.edu.upeu.pharmamobil.presentation.inicio.InicioScreen
 import pe.edu.upeu.pharmamobil.presentation.producto.ProductoScreen
 import pe.edu.upeu.pharmamobil.theme.PharmaMobilTheme
@@ -86,6 +88,11 @@ fun App() = KoinContext {
 
     var pantallaActual by rememberSaveable(stateSaver = ScreenSaver) {
         mutableStateOf<Screen>(Screen.Inicio)
+    }
+
+    // Id del producto abierto en detalle; null mientras se ve el listado.
+    var productoEnDetalle by rememberSaveable {
+        mutableStateOf<Long?>(null)
     }
 
     var darkTheme by rememberSaveable {
@@ -128,6 +135,7 @@ fun App() = KoinContext {
                             onClick = {
 
                                 pantallaActual = destino.screen
+                                productoEnDetalle = null
 
                                 scope.launch {
                                     drawerState.close()
@@ -167,26 +175,47 @@ fun App() = KoinContext {
 
                         title = {
                             Text(
-                                text = tituloDe(pantallaActual)
+                                text = if (productoEnDetalle != null) {
+                                    "Detalle del producto"
+                                } else {
+                                    tituloDe(pantallaActual)
+                                }
                             )
                         },
 
                         navigationIcon = {
 
-                            IconButton(
-                                onClick = {
+                            if (productoEnDetalle != null) {
 
-                                    scope.launch {
-
-                                        drawerState.open()
+                                IconButton(
+                                    onClick = {
+                                        productoEnDetalle = null
                                     }
-                                }
-                            ) {
+                                ) {
 
-                                Icon(
-                                    imageVector = Icons.Default.Menu,
-                                    contentDescription = "Abrir menú"
-                                )
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Volver al inventario"
+                                    )
+                                }
+
+                            } else {
+
+                                IconButton(
+                                    onClick = {
+
+                                        scope.launch {
+
+                                            drawerState.open()
+                                        }
+                                    }
+                                ) {
+
+                                    Icon(
+                                        imageVector = Icons.Default.Menu,
+                                        contentDescription = "Abrir menú"
+                                    )
+                                }
                             }
                         },
 
@@ -215,10 +244,30 @@ fun App() = KoinContext {
                                 }
                             )
 
-                        Screen.Productos ->
-                            ProductoScreen(
-                                viewModel = koinViewModel()
-                            )
+                        Screen.Productos -> {
+
+                            val productoId = productoEnDetalle
+
+                            if (productoId == null) {
+
+                                ProductoScreen(
+                                    viewModel = koinViewModel(),
+                                    onVerDetalle = { id ->
+                                        productoEnDetalle = id
+                                    }
+                                )
+
+                            } else {
+
+                                DetalleProductoScreen(
+                                    productoId = productoId,
+                                    viewModel = koinViewModel(),
+                                    onVolver = {
+                                        productoEnDetalle = null
+                                    }
+                                )
+                            }
+                        }
 
                         Screen.Clientes ->
                             ClienteScreen(
